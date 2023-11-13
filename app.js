@@ -19,6 +19,8 @@ const oneplusImages = path.join(commonPath,"oneplus");
 const pixelImages = path.join(commonPath,"pixel");
 const samsungImages = path.join(commonPath,"samsung");
 const androidImages = path.join(commonPath,"android_13");
+const nothingImages = path.join(commonPath,"nothing");
+const allImages = path.join(commonPath);
 app.use('/wall_mosaic',express.static(abstractImages));
 app.use('/wall_mosaic',express.static(amoledImages));
 app.use('/wall_mosaic',express.static(appleImages));
@@ -31,29 +33,76 @@ app.use('/wall_mosaic',express.static(oneplusImages));
 app.use('/wall_mosaic',express.static(pixelImages));
 app.use('/wall_mosaic',express.static(samsungImages));
 app.use('/wall_mosaic',express.static(androidImages));
+app.use('/wall_mosaic',express.static(allImages));
+app.use('/wall_mosaic',express.static(nothingImages));
 
 const imagesDirectory = process.env.COMMON_PATH;
 
+
+
+app.get('/get_all_wallpapers',async(req,res)=>{
+    try { 
+        const allImagesArr = [];
+        fs.readdir(allImages,(err,files)=>{
+            if(err){
+                res.status(501).json({
+                    "status":501, 
+                    "message": err,
+                    "total_images": 0,
+                    "images": [], 
+                });
+            }else{
+                const folderNames = getFolderNames(imagesDirectory);
+
+    const folderData = folderNames.map((folderName,_index) => {
+        const folderPath = path.join(imagesDirectory, folderName);
+        const imageFiles = getImagesInFolder(folderPath); 
+        const key = `wall_mosaic_${folderName}`
+         return {
+            folderName,
+            numberOfImages: imageFiles.length,
+            imageFiles,
+            key
+        };
+    });
+
+    const response = {
+        "status": 200,
+        "message": "All wallpapers fetched successfully",
+        "catagories": folderData
+    };
+
+    res.json(response);
+            }
+        })
+    } catch (error) {
+        res.status(500).json({
+            "status":500, 
+                    "message": error,
+                    "total_images": 0,
+                    "images": [], 
+        });
+    }
+});
 
 
 app.get('/wall_mosaic_abstract',async(req,res)=>{ 
     console.log(req);
     try {
         const imageArray = []; 
-        var imgInfo;
-        fs.readdir(abstractImages,(err,files)=>{
+         fs.readdir(abstractImages,(err,files)=>{
             if(err){
                 res.status(500).json({
                     "error":err.message
                 });
             }else{
+                
                 files.map((filename,_index)=>{ 
-                    imgInfo = imagesInformation(`G:/Node projects/wallpaper_server/images/abstract/${filename}`)
+                    
                     imageArray.push({
                         "link": `/wall_mosaic/${filename}`,
-                        "name":`${filename.replace(/\.[^.]+$/, "")}`, 
-                        "imgInfo": imgInfo
-                    })
+                        "name":`${filename.replace(/\.[^.]+$/, "")}`,  
+                     })
                 }); 
 
                 res.status(200).json({
@@ -73,7 +122,42 @@ app.get('/wall_mosaic_abstract',async(req,res)=>{
                     "images": [], 
         });
     }
-});  
+}); 
+
+app.get('/wall_mosaic_nothing',async (req,res)=>{
+    try {
+        const nothingImageArray = [];  
+        fs.readdir(nothingImages,(err,files)=>{
+            if(err){
+                res.status(500).json({
+                    "error":err.message
+                });
+            }else{
+                files.map((filename,index)=>{  
+                    nothingImageArray.push({
+                        "link": `/wall_mosaic/${filename}`,
+                        "name":`image_${index}`,  
+                    })
+                }); 
+
+                res.status(200).json({
+                    "status":200, 
+                    "message": "nothing wallpapers fetched successfully",
+                    "total_images": nothingImageArray.length,
+                    "images": nothingImageArray, 
+                    
+                });
+            }
+        })
+    } catch (error) {
+        res.status(500).json({
+            "status":500, 
+                    "message": error,
+                    "total_images": 0,
+                    "images": [], 
+        });
+    }
+});
 
 app.get('/wall_mosaic_cities',async(_req,res)=>{
     try {
@@ -93,7 +177,7 @@ app.get('/wall_mosaic_cities',async(_req,res)=>{
 
                 res.status(200).json({
                     "status":200, 
-                    "message": "abstract wallpapers fetched successfully",
+                    "message": "cities wallpapers fetched successfully",
                     "total_images": citiesImageArray.length,
                     "images": citiesImageArray, 
                     
@@ -128,7 +212,7 @@ app.get('/wall_mosaic_amoled',async(_req,res)=>{
 
                 res.status(200).json({
                     "status":200, 
-                    "message": "abstract wallpapers fetched successfully",
+                    "message": "amoled wallpapers fetched successfully",
                     "total_images": amoledImageArray.length,
                     "images": amoledImageArray, 
                     
@@ -162,7 +246,7 @@ app.get('/wall_mosaic_apple',async(_req,res)=>{
 
                 res.status(200).json({
                     "status":200, 
-                    "message": "abstract wallpapers fetched successfully",
+                    "message": "apple wallpapers fetched successfully",
                     "total_images": appleImageArray.length,
                     "images": appleImageArray, 
                     
@@ -196,7 +280,7 @@ app.get('/wall_mosaic_cars',async(_req,res)=>{
 
                 res.status(200).json({
                     "status":200, 
-                    "message": "abstract wallpapers fetched successfully",
+                    "message": "cars wallpapers fetched successfully",
                     "total_images": carsImageArray.length,
                     "images": carsImageArray, 
                     
@@ -231,7 +315,7 @@ app.get('/wall_mosaic_gods',async(_req,res)=>{
 
                 res.status(200).json({
                     "status":200, 
-                    "message": "abstract wallpapers fetched successfully",
+                    "message": "gods wallpapers fetched successfully",
                     "total_images": godsImageArray.length,
                     "images": godsImageArray, 
                     
@@ -266,7 +350,7 @@ app.get('/wall_mosaic_marvals',async(_req,res)=>{
 
                 res.status(200).json({
                     "status":200, 
-                    "message": "abstract wallpapers fetched successfully",
+                    "message": "marvals wallpapers fetched successfully",
                     "total_images": marvalsImageArray.length,
                     "images": marvalsImageArray, 
                     
@@ -301,7 +385,7 @@ app.get('/wall_mosaic_nature',async(_req,res)=>{
 
                 res.status(200).json({
                     "status":200, 
-                    "message": "abstract wallpapers fetched successfully",
+                    "message": "nature wallpapers fetched successfully",
                     "total_images": natureImageArray.length,
                     "images": natureImageArray, 
                     
@@ -336,7 +420,7 @@ app.get('/wall_mosaic_oneplus',async(req,res)=>{
 
                 res.status(200).json({
                     "status":200, 
-                    "message": "abstract wallpapers fetched successfully",
+                    "message": "oneplus wallpapers fetched successfully",
                     "total_images": oneplusImageArray.length,
                     "images": oneplusImageArray, 
                     
@@ -372,7 +456,7 @@ app.get('/wall_mosaic_pixel',async(req,res)=>{
 
                 res.status(200).json({
                     "status":200, 
-                    "message": "abstract wallpapers fetched successfully",
+                    "message": "pixels wallpapers fetched successfully",
                     "total_images": pixelImageArray.length,
                     "images": pixelImageArray, 
                     
@@ -407,7 +491,7 @@ app.get('/wall_mosaic_samsung',async(req,res)=>{
 
                 res.status(200).json({
                     "status":200, 
-                    "message": "abstract wallpapers fetched successfully",
+                    "message": "samsung wallpapers fetched successfully",
                     "total_images": samsungImageArray.length,
                     "images": samsungImageArray, 
                     
@@ -443,7 +527,7 @@ app.get('/wall_mosaic_android_13',async(req,res)=>{
 
                 res.status(200).json({
                     "status":200, 
-                    "message": "abstract wallpapers fetched successfully",
+                    "message": "android wallpapers fetched successfully",
                     "total_images": androidImageArray.length,
                     "images": androidImageArray, 
                     
