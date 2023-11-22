@@ -191,7 +191,7 @@ app.get('/get_all_images', async (req, res) => {
 });
 
  
-app.get('/wall_mosaic_abstract_r', async (req, res) => {
+app.get('/wall_mosaic_abstract', async (req, res) => {
     console.log(req);
     try {
         const imageArray = [];
